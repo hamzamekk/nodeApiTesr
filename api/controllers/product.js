@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-
+//models
 const Product = require("../models/product");
 
 exports.get_AllProducts = (req, res, next) => {

@@ -4,8 +4,8 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-const productRoutes = require('./routes/products')
-const ordersRoutes = require('./routes/orders')
+//routers
+const userRoutes = require('./api/routes/user');
 
 mongoose.connect('mongodb+srv://mekk:'+ process.env.MONGO_ATLAS_PW +'@my-node-app.yvvtf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
@@ -23,8 +23,9 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use('/products', productRoutes);
-app.use('/orders', ordersRoutes);
+// Routes which should handle requests
+app.use("/user", userRoutes);
+
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');

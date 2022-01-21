@@ -1,11 +1,24 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require('nodemailer');
 
 const User = require("../models/user");
 
+
+
+var transport = nodemailer.createTransport({
+    host: "smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "66b89d010a11e8",
+      pass: "eb66a61007f758"
+    }
+  });
+
 exports.user_signup = (req, res, next) => {
     const userBody = req.body;
+    console.log(userBody);
     bcrypt.hash(userBody.password, 10 , (err, hash) => {
         if(err) {
             return res.status(500).json({
@@ -16,9 +29,25 @@ exports.user_signup = (req, res, next) => {
             user
             .save()
             .then(() => {
-                res.status(200).json({message: "User created with success!"});
+                transport.sendMail({
+                    from: '"hamza el mekkoudi 👻" <foo@example.com>', // sender address
+                    to: userBody.email, // list of receivers
+                    subject: "Hello ✔", // Subject line
+                    text: "Hello world?", // plain text body
+                    html: "<b>Hello world?</b>", // html body
+               }).then(data => {
+                   console.log(data)
+                   res.status(200).json({message: "User created with success!"});
+               }).catch(err => {
+                console.log(err)
+
+                   res.status(500).json({
+                       error: err.message
+                   })
+               })
             })
             .catch(err => {
+                console.log(err)
                 res.status(500).json({message: err.message})
             })
         } 

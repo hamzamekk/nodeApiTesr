@@ -3,14 +3,26 @@ const mongoose = require("mongoose");
 //models
 const Product = require("../models/product");
 
-exports.get_AllProducts = (req, res, next) => {
+exports.get_AllProducts = async (req, res, next) => {
+    const {search, limit = 10, offset = 0} = req.query
+
+    const count = await Product.countDocuments();
+    // console.log(count);
+
+    console.log("count/offset",Math.ceil(count / limit));
+
     Product
     .find()
+    .limit(limit)
+    .skip(offset)
     .then(data => {
-        return res.status(200).json({
-            data,
-            count: data.length
-        })
+        const result = {
+            count,
+            next: offset / limit >= (count / limit) - 1  ? null : `localhost:3000/product?limit=${limit}&offset=${parseInt(offset) + parseInt(limit)}`,
+            previous: offset <= 0 ? null : `localhost:3000/product?limit=${limit}&offset=${parseInt(offset) - parseInt(limit)}`,
+            result: data
+        }
+        return res.status(200).json(result)
     })
     .catch(err => {
         return res.status(500).json({

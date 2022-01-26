@@ -3,18 +3,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require('nodemailer');
 
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
 const User = require("../models/user");
-
-
-
-var transport = nodemailer.createTransport({
-    host: "smtp.mailtrap.io",
-    port: 2525,
-    auth: {
-      user: "66b89d010a11e8",
-      pass: "eb66a61007f758"
-    }
-  });
 
 exports.user_signup = (req, res, next) => {
     const userBody = req.body;
@@ -28,23 +20,39 @@ exports.user_signup = (req, res, next) => {
             const user = new User({_id: mongoose.Types.ObjectId(), ...userBody, ...{password: hash}});
             user
             .save()
-            .then(() => {
-                transport.sendMail({
-                    from: '"hamza el mekkoudi 👻" <foo@example.com>', // sender address
-                    to: userBody.email, // list of receivers
-                    subject: "Hello ✔", // Subject line
-                    text: "Hello world?", // plain text body
-                    html: "<b>Hello world?</b>", // html body
-               }).then(data => {
-                   console.log(data)
-                   res.status(200).json({message: "User created with success!"});
-               }).catch(err => {
-                console.log(err)
+            .then((result) => {
+            //     transport.sendMail({
+            //         from: '"hamza el mekkoudi 👻" <foo@example.com>', // sender address
+            //         to: userBody.email, // list of receivers
+            //         subject: "Hello ✔", // Subject line
+            //         text: "Hello world?", // plain text body
+            //         html: "<b>Hello world?</b>", // html body
+            //    }).then(data => {
+            //        console.log(data)
+            //        res.status(200).json({message: "User created with success!"});
+            //    }).catch(err => {
+            //     console.log(err)
 
-                   res.status(500).json({
-                       error: err.message
-                   })
-               })
+            //        res.status(500).json({
+            //            error: err.message
+            //        })
+            //    })
+              res.status(200).json({message: "User created with success!"});
+               const msg = {
+                to: result.email, // Change to your recipient
+                from: 'hazard_cfc@outlook.fr', // Change to your verified sender
+                subject: 'Sending with SendGrid is Fun',
+                // text: 'and easy to do anywhere, even with Node.js',
+                html: '<h1>and easy to do anywhere, even with Node.js</h1>',
+              }
+            return sgMail
+                .send(msg)
+                .then(() => {
+                  console.log('Email sent')
+                })
+                .catch((error) => {
+                  console.error(error)
+                })
             })
             .catch(err => {
                 console.log(err)
